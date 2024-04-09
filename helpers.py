@@ -16,3 +16,8 @@ def fortegnskift(f, t):
     if f[len(f) - 1] * f[len(f)- 2] < 0:
         print("Skift ved: ", t[i])
     return None
+
+# Theta til alfa koordinater
+def solar_elevation_angle(theta):
+    return np.pi/2 - theta
+
