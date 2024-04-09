@@ -14,7 +14,7 @@ def fortegnskift(f, t):
         if f[i] * f[i+1] < 0:
             print("Skift ved: ", t[i])
     if f[len(f) - 1] * f[len(f)- 2] < 0:
-        print("Skift ved: ", t[i])
+        print("Skift ved: ", t[len(f)-1])
     return None
 
 # Theta til alfa koordinater
