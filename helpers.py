@@ -1,9 +1,9 @@
 #indeholder alle de funktioner, som der står vi skal skrive.
 
 #funktionsværdier i `f` i intervallet $[Low, Up]$ og angiver de tilhørende `t`-værdier.
-def interval(f, t, low, up):
+def interval(f, t, lower, upper):
     for i in range(0, len(f)):
-        if f[i] > low and f[i] < up:
+        if f[i] > lower and f[i] < upper:
             print("Data(f): ", f[i], "Time(t): ", t[i])
     return None
         
