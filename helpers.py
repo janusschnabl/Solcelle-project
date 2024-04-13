@@ -17,6 +17,55 @@ def fortegnskift(f, t):
         print("Skift ved: ", t[len(f)-1])
     return None
 
+
+#Solens højeste punkt indefor interval af dato
+def max_sol(start_dato, slut_dato, latitude, longtitude, place):
+    delta_tid = "H" #"M"
+    tidszone = "Europe/Copenhagen"
+    
+    site = Location(
+        latitude, longtitude, "Europe/Copenhagen", 10, place
+    )
+
+    # Definition of a time range of simulation
+    times = pd.date_range(
+        start_dato + " 00:00:00", slut_dato + " 23:59:00", inclusive="left", freq=delta_tid, tz=tidszone
+    )
+    
+    # Estimate Solar Position with the 'Location' object
+    solpos = site.get_solarposition(times)
+    
+    f = np.array(solpos.loc[start_dato].elevation)
+    print(f.max())
+    return None
+
+#Solens z,y,z koordinator
+def solar_position_to_xyz(dato, latitude, longitude, altitude=0, tz='UTC'):
+    
+    delta_tid = "H"
+    times = pd.date_range(dato + " 00:00:00", dato + " 23:59:00", freq=delta_tid, tz=tidszone)
+    
+    # Create a location object
+    location = Location(latitude, longitude, tz, altitude)
+    
+    # Calculate solar position
+    solar_position = location.get_solarposition(times)
+    
+    # Get the Earth-Sun distance and convert to meters
+    r = np.array(nrel_earthsun_distance(times) * 149597870700)  # 1 AU in meters
+    
+    # Convert zenith and azimuth from degrees to radians
+    theta = np.deg2rad(np.array(solpos.loc[start_dato].zenith))
+    phi = np.deg2rad(np.array(solpos.loc[start_dato].azimuth))
+    
+    # Udregning
+    x = r * np.sin(theta) * np.cos(phi)
+    y = r * np.sin(theta) * np.sin(phi)
+    z = r * np.cos(theta)
+    for i in range(0, len(x)):
+        print("Time: ", times[i], "x: ", x[i], "y: ", y[i], "z: ", z[i])
+    return None
+
 # Theta til alfa koordinater
 def solar_elevation_angle(theta):
     return np.pi/2 - theta
