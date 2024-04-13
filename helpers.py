@@ -39,7 +39,7 @@ def max_sol(start_dato, slut_dato, latitude, longtitude, place):
     print(f.max())
     return None
 
-#Solens z,y,z koordinator
+#Solens x,y,z koordinator
 def solar_position_to_xyz(dato, latitude, longitude, altitude=0, tz='UTC'):
     
     delta_tid = "H"
@@ -51,7 +51,7 @@ def solar_position_to_xyz(dato, latitude, longitude, altitude=0, tz='UTC'):
     # Calculate solar position
     solar_position = location.get_solarposition(times)
     
-    # Get the Earth-Sun distance and convert to meters
+    # Jord sol distance i meter
     r = np.array(nrel_earthsun_distance(times) * 149597870700)  # 1 AU in meters
     
     # Convert zenith and azimuth from degrees to radians
@@ -65,6 +65,9 @@ def solar_position_to_xyz(dato, latitude, longitude, altitude=0, tz='UTC'):
     for i in range(0, len(x)):
         print("Time: ", times[i], "x: ", x[i], "y: ", y[i], "z: ", z[i])
     return None
+
+
+#xyz til sfærisk koordinator
 
 # Theta til alfa koordinater
 def solar_elevation_angle(theta):
