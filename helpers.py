@@ -67,7 +67,16 @@ def solar_position_to_xyz(dato, latitude, longitude, altitude=0, tz='UTC'):
     return None
 
 
-#xyz til sfærisk koordinator
+#xyz til sfærisk coordinator
+def solar_position_to_spherical(x, y, z):
+    r = np.sqrt(x**2 + y**2 + z**2)
+    theta = np.arccos(z / r)
+    phi = np.arctan2(y, x)
+    
+    for i in range(0, len(x)):
+        print("r: ", r[i], "theta: ", theta[i], "phi: ", phi[i])
+    return None
+
 
 # Theta til alfa koordinater
 def solar_elevation_angle(theta):
