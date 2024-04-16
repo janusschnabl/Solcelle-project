@@ -125,7 +125,8 @@ def solar_flux(Længde, bredde, S_0, A_0, theta_panel, phi_panel, start_dato, sl
     
     return flux
 
-flux = solar_flux(1, 1, 1100, 0.5, 0, 180, "2024-01-01", "2024-12-31", 55.7861, 12.5234, 10,  "Europe/Copenhagen")
+# Funktions kald eksempel.
+# flux = solar_flux(1, 1, 1100, 0.5, 0, 180, "2024-01-01", "2024-12-31", 55.7861, 12.5234, 10,  "Europe/Copenhagen")
 
 # Beregning af den totale energiproduktion for flux array. dx er tidintervallet i sekunder mellem hvert datapunkt for fluxen
 integral = integrate.simps(flux, dx = 3600)
