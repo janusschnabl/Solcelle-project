@@ -54,8 +54,6 @@ def solar_position_to_xyz(start_dato, latitude, longtitude, altitude, tz):
     # Estimate Solar Position with the 'Location' object
     solpos = site.get_solarposition(times)
     
-
-    
     # Get the Earth-Sun distance and convert to meters
     r = np.array(nrel_earthsun_distance(times) * 149597870700)  # 1 AU in meters
     
