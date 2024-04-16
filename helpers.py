@@ -40,16 +40,21 @@ def max_sol(start_dato, slut_dato, latitude, longtitude, place):
     return f.max()
 
 #Solens x,y,z koordinator
-def solar_position_to_xyz(dato, latitude, longitude, altitude=0, tz='UTC'):
+def solar_position_to_xyz(start_dato, latitude, longtitude, altitude, tz):
     """Returns time,x,y,z as np arrays"""
-    delta_tid = "H"
-    times = pd.date_range(dato + " 00:00:00", dato + " 23:59:00", freq=delta_tid, tz=tidszone)
+
+    delta_tid = "H" #"M"
+    tidszone = "Europe/Copenhagen"
     
-    # Create a location object
-    location = Location(latitude, longitude, tz, altitude)
+    site = Location(latitude, longtitude, tz, altitude)
+
+    # Definition of a time range of simulation
+    times = pd.date_range (start_dato + " 00:00:00", start_dato + " 23:59:00", inclusive="left", freq=delta_tid, tz=tidszone)
     
-    # Calculate solar position
-    solar_position = location.get_solarposition(times)
+    # Estimate Solar Position with the 'Location' object
+    solpos = site.get_solarposition(times)
+    
+
     
     # Get the Earth-Sun distance and convert to meters
     r = np.array(nrel_earthsun_distance(times) * 149597870700)  # 1 AU in meters
