@@ -87,6 +87,8 @@ import pandas as pd
 import pvlib
 import numpy as np
 from pvlib.location import Location
+from scipy import integrate
+import matplotlib.pyplot as plt
 
 # solar panel elevation projection funktioner:
 def solar_panel_projection(theta_s, phi_s, theta_p, phi_p):
@@ -130,3 +132,12 @@ integral = integrate.simps(flux, dx = 3600)
 # Mangler solpanelets effektivitet i forhold til konvertering af solens stråler
 integral
 
+# Bestemmelse af vinklen hvori man producerer mest energi
+energy = []
+for i in range (91):
+    flux = solar_flux(1, 1, 1100, 0.5, i, 180, "2024-01-01", "2024-12-31", 55.7861, 12.5234, 10,  "Europe/Copenhagen")
+    energy.append(integrate.simps(flux, dx = 3600))
+# Plot vinkel i forhold til energi produceret 
+plt.plot(energy)
+# Find vinklen man produceret mest energi.
+energy.index(max(energy))
