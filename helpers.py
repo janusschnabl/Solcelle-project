@@ -81,10 +81,16 @@ def solar_position_to_spherical(x, y, z):
 # Theta til alfa koordinater
 def solar_elevation_angle(theta):
     return np.pi/2 - theta
+    
+#pakker til brug af funktioner for neden
+import pandas as pd
+import pvlib
+import numpy as np
+from pvlib.location import Location
 
 # solar panel elevation projection funktioner:
 def solar_panel_projection(theta_s, phi_s, theta_p, phi_p):
-    proj = np.sin(theta_p) * np.sin(theta_s) * np.cos(phi_p - phi_s) + np.cos(theta_p + theta_s)
+    proj = np.sin(theta_p) * np.sin(theta_s) * np.cos(phi_p - phi_s) + np.cos(theta_p) * np.cos(theta_s)
     return max(proj,0)
 
 def solar_panel_projection_arrays(theta_s, phi_s, theta_p, phi_p):
@@ -93,7 +99,7 @@ def solar_panel_projection_arrays(theta_s, phi_s, theta_p, phi_p):
     else: 
         raise ValueError("Arrays do not have equal number of entries")
 
-def solar_flux(Længde, bredde, S_0, A_0, theta_panel, phi_panel, start_dato, latitude, longtitude, altitude, tz):
+def solar_flux(Længde, bredde, S_0, A_0, theta_panel, phi_panel, start_dato, slut_dato,latitude, longtitude, altitude, tz):
     """Returns time,x,y,z as np arrays"""
 
     delta_tid = "H" #"Min"
@@ -102,18 +108,25 @@ def solar_flux(Længde, bredde, S_0, A_0, theta_panel, phi_panel, start_dato, la
     site = Location(latitude, longtitude, tz, altitude)
 
     # Definition of a time range of simulation
-    times = pd.date_range (start_dato + " 00:00:00", "2024-06-03" + " 23:59:00", inclusive="left", freq=delta_tid, tz=tidszone)
+    times = pd.date_range (start_dato + " 00:00:00", slut_dato + " 23:59:00", inclusive="left", freq=delta_tid, tz=tidszone)
     
     # Estimate Solar Position with the 'Location' object
     solpos = site.get_solarposition(times)
-    
+
     # Convert zenith and azimuth from degrees to radians
-    theta = np.deg2rad(np.array(solpos.loc[start_dato].zenith))
-    phi = np.deg2rad(np.array(solpos.loc[start_dato].azimuth))
-    print(np.deg2rad(phi_panel))
+    theta = np.deg2rad(np.array(solpos["zenith"]))
+    phi = np.deg2rad(np.array(solpos["azimuth"]))
  
     proj = solar_panel_projection_arrays(theta, phi, np.deg2rad(theta_panel), np.deg2rad(phi_panel))
     
     flux = Længde * bredde * S_0 * A_0 * proj
     
     return flux
+
+flux = solar_flux(1, 1, 1100, 0.5, 0, 180, "2024-01-01", "2024-12-31", 55.7861, 12.5234, 10,  "Europe/Copenhagen")
+
+# Beregning af den totale energiproduktion for flux array. dx er tidintervallet i sekunder mellem hvert datapunkt for fluxen
+integral = integrate.simps(flux, dx = 3600)
+# Mangler solpanelets effektivitet i forhold til konvertering af solens stråler
+integral
+
