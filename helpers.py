@@ -84,11 +84,36 @@ def solar_elevation_angle(theta):
 
 # solar panel elevation projection funktioner:
 def solar_panel_projection(theta_s, phi_s, theta_p, phi_p):
-    proj = sin(theta_p) * sin(theta_s) * cos(phi_p - phi_s) + cos(theta_p + theta_s)
+    proj = np.sin(theta_p) * np.sin(theta_s) * np.cos(phi_p - phi_s) + np.cos(theta_p + theta_s)
     return max(proj,0)
 
 def solar_panel_projection_arrays(theta_s, phi_s, theta_p, phi_p):
-    if (len(theta_s) == len(phi_s) == len(theta_p) == len(phi_p)):
-        return np.array([solar_panel_projection(theta_s[i], phi_s[i], theta_p[i], phi_p[i]) for i in range(len(theta_s))])
+    if (len(theta_s) == len(phi_s)):
+        return np.array([solar_panel_projection(theta_s[i], phi_s[i], theta_p, phi_p) for i in range(len(theta_s))])
     else: 
         raise ValueError("Arrays do not have equal number of entries")
+
+def solar_flux(Længde, bredde, S_0, A_0, theta_panel, phi_panel, start_dato, latitude, longtitude, altitude, tz):
+    """Returns time,x,y,z as np arrays"""
+
+    delta_tid = "H" #"Min"
+    tidszone = "Europe/Copenhagen"
+    
+    site = Location(latitude, longtitude, tz, altitude)
+
+    # Definition of a time range of simulation
+    times = pd.date_range (start_dato + " 00:00:00", "2024-06-03" + " 23:59:00", inclusive="left", freq=delta_tid, tz=tidszone)
+    
+    # Estimate Solar Position with the 'Location' object
+    solpos = site.get_solarposition(times)
+    
+    # Convert zenith and azimuth from degrees to radians
+    theta = np.deg2rad(np.array(solpos.loc[start_dato].zenith))
+    phi = np.deg2rad(np.array(solpos.loc[start_dato].azimuth))
+    print(np.deg2rad(phi_panel))
+ 
+    proj = solar_panel_projection_arrays(theta, phi, np.deg2rad(theta_panel), np.deg2rad(phi_panel))
+    
+    flux = Længde * bredde * S_0 * A_0 * proj
+    
+    return flux
