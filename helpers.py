@@ -36,12 +36,12 @@ def max_sol(start_dato, slut_dato, latitude, longtitude, place):
     solpos = site.get_solarposition(times)
     
     f = np.array(solpos.loc[start_dato].elevation)
-    print(f.max())
-    return None
+
+    return f.max()
 
 #Solens x,y,z koordinator
 def solar_position_to_xyz(dato, latitude, longitude, altitude=0, tz='UTC'):
-    
+    """Returns time,x,y,z as np arrays"""
     delta_tid = "H"
     times = pd.date_range(dato + " 00:00:00", dato + " 23:59:00", freq=delta_tid, tz=tidszone)
     
@@ -51,20 +51,19 @@ def solar_position_to_xyz(dato, latitude, longitude, altitude=0, tz='UTC'):
     # Calculate solar position
     solar_position = location.get_solarposition(times)
     
-    # Jord sol distance i meter
+    # Get the Earth-Sun distance and convert to meters
     r = np.array(nrel_earthsun_distance(times) * 149597870700)  # 1 AU in meters
     
     # Convert zenith and azimuth from degrees to radians
     theta = np.deg2rad(np.array(solpos.loc[start_dato].zenith))
     phi = np.deg2rad(np.array(solpos.loc[start_dato].azimuth))
     
-    # Udregning
+    # Calculate Cartesian coordinates
     x = r * np.sin(theta) * np.cos(phi)
     y = r * np.sin(theta) * np.sin(phi)
     z = r * np.cos(theta)
-    for i in range(0, len(x)):
-        print("Time: ", times[i], "x: ", x[i], "y: ", y[i], "z: ", z[i])
-    return None
+
+    return  times, x,  y,  z
 
 
 #xyz til sfærisk coordinator
@@ -73,9 +72,7 @@ def solar_position_to_spherical(x, y, z):
     theta = np.arccos(z / r)
     phi = np.arctan2(y, x)
     
-    for i in range(0, len(x)):
-        print("r: ", r[i], "theta: ", theta[i], "phi: ", phi[i])
-    return None
+    return r, theta, phi
 
 
 # Theta til alfa koordinater
