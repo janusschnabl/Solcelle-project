@@ -1,5 +1,15 @@
 #indeholder alle de funktioner, som der står vi skal skrive.
 
+#pakker til brug af funktioner for neden
+import pandas as pd
+import pvlib
+import numpy as np
+from pvlib.location import Location
+from scipy import integrate
+import matplotlib.pyplot as plt
+
+PANEL_EFFICIENCY = 0.214
+
 #funktionsværdier i `f` i intervallet $[Low, Up]$ og angiver de tilhørende `t`-værdier.
 def interval(f, t, lower, upper):
     for i in range(0, len(f)):
@@ -82,13 +92,7 @@ def solar_position_to_spherical(x, y, z):
 def solar_elevation_angle(theta):
     return np.pi/2 - theta
     
-#pakker til brug af funktioner for neden
-import pandas as pd
-import pvlib
-import numpy as np
-from pvlib.location import Location
-from scipy import integrate
-import matplotlib.pyplot as plt
+
 
 # solar panel elevation projection funktioner:
 def solar_panel_projection(theta_s, phi_s, theta_p, phi_p):
@@ -121,7 +125,7 @@ def solar_flux(Længde, bredde, S_0, A_0, theta_panel, phi_panel, start_dato, sl
  
     proj = solar_panel_projection_arrays(theta, phi, np.deg2rad(theta_panel), np.deg2rad(phi_panel))
     
-    flux = Længde * bredde * S_0 * A_0 * proj
+    flux = Længde * bredde * S_0 * A_0 * proj * PANEL_EFFICIENCY
     
     return flux
 
