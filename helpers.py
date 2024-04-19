@@ -158,7 +158,7 @@ def daterange(start_date, end_date):
     for n in range(int((end_date - start_date).days)):
         yield start_date + timedelta(n)
 
-# Udregner energien for et realistisk panel-setup over en given periode
+# Udregner energien for et realistisk panel-setup over en given periode - Angiv date som date(year, month, day)
 def get_daily_energy(start_date, end_date):
     result = []
     for single_date in daterange(start_date, end_date): 
