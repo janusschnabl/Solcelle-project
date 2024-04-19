@@ -7,8 +7,14 @@ import numpy as np
 from pvlib.location import Location
 from scipy import integrate
 import matplotlib.pyplot as plt
+from datetime import date, timedelta
 
 PANEL_EFFICIENCY = 0.214
+A0 = 0.5
+S0 = 1100
+L = 2.384
+B = 1.303 
+PANEL_COUNT = 38
 
 #funktionsværdier i `f` i intervallet $[Low, Up]$ og angiver de tilhørende `t`-værdier.
 def interval(f, t, lower, upper):
@@ -146,3 +152,18 @@ for i in range (91):
 plt.plot(energy)
 # Find vinklen man produceret mest energi.
 energy.index(max(energy))
+
+# Giver en date range som array
+def daterange(start_date, end_date):
+    for n in range(int((end_date - start_date).days)):
+        yield start_date + timedelta(n)
+
+# Udregner energien for et realistisk panel-setup over en given periode
+def get_daily_energy(start_date, end_date):
+    result = []
+    for single_date in daterange(start_date, end_date): 
+        date_string = single_date.strftime("%Y-%m-%d")
+        flux = PANEL_COUNT * solar_flux(L,B,S0,A0, 51, 180, date_string, date_string, 55.7861, 12.5234, 10, "Europe/Copenhagen")
+        joule = integrate.simps(flux, dx=3600)
+        result.append(joule)
+    return result
