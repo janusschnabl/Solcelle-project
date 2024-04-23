@@ -15,6 +15,8 @@ S0 = 1100
 L = 2.384
 B = 1.303 
 PANEL_COUNT = 38
+LATTITUDE, LONGTITUDE, ALTITUDE = 55.7861, 12.5234, 10
+
 
 #funktionsværdier i `f` i intervallet $[Low, Up]$ og angiver de tilhørende `t`-værdier.
 def interval(f, t, lower, upper):
@@ -106,14 +108,14 @@ def solar_panel_projection(theta_s, phi_s, theta_p, phi_p):
     return np.where(proj < 0, 0,proj)
 
 # Solens position
-def get_solar_position(start_dato, slut_dato,latitude, longtitude, altitude, tz):
-    delta_tid = "H" #"Min"
+def get_solar_position(start_dato, slut_dato,latitude, longtitude, altitude, tz, dt = "H"):
+    """dt = 'H' or 'Min'"""
     tidszone = "Europe/Copenhagen"
     
     site = Location(latitude, longtitude, tz, altitude)
 
     # Definition of a time range of simulation
-    times = pd.date_range (start_dato + " 00:00:00", slut_dato + " 23:59:00", inclusive="left", freq=delta_tid, tz=tidszone)
+    times = pd.date_range (start_dato + " 00:00:00", slut_dato + " 23:59:00", inclusive="left", freq=dt, tz=tidszone)
     
     # Estimate Solar Position with the 'Location' object
     solpos = site.get_solarposition(times)
@@ -125,7 +127,6 @@ def solar_flux(Længde, bredde, S_0, A_0, theta_panel, phi_panel, solpos):
     # Convert zenith and azimuth from degrees to radians
     theta = np.deg2rad(np.array(solpos["zenith"]))
     phi = np.deg2rad(np.array(solpos["azimuth"]))
- 
     proj = solar_panel_projection(theta, phi, np.deg2rad(theta_panel), np.deg2rad(phi_panel))
 
     valid_mask = (theta >= 0) & (theta <= np.pi / 2)
@@ -135,17 +136,18 @@ def solar_flux(Længde, bredde, S_0, A_0, theta_panel, phi_panel, solpos):
     
     return flux
 
-# Giver en date range som array
+# Giver en date range
 def daterange(start_date, end_date):
     for n in range(int((end_date - start_date).days)):
         yield start_date + timedelta(n)
 
-# Udregner energien for et realistisk panel-setup over en given periode - Angiv date som date(year, month, day)
-def get_daily_energy(start_date, end_date):
+# Udregner 
+def get_daily_energy(start_date, end_date, lat, lon, alt):
     result = []
     for single_date in daterange(start_date, end_date): 
         date_string = single_date.strftime("%Y-%m-%d")
-        flux = PANEL_COUNT * solar_flux(L,B,S0,A0, 51, 180, date_string, date_string, 55.7861, 12.5234, 10, "Europe/Copenhagen")
-        joule = integrate.simps(flux, dx=3600)
+        solpos = get_solar_position(date_string, date_string, lat, lon, alt, "Europe/Copenhagen", dt = "Min")
+        flux = PANEL_COUNT * solar_flux(L,B,S0,A0, 51, 180, solpos )
+        joule = integrate.simps(flux, dx=60)
         result.append(joule)
     return result
