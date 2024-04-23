@@ -147,7 +147,31 @@ def get_daily_energy(start_date, end_date, lat, lon, alt):
     for single_date in daterange(start_date, end_date):
         date_string = single_date.strftime("%Y-%m-%d")
         solpos = get_solar_position(date_string, date_string, lat, lon, alt, "Europe/Copenhagen", dt = "Min")
-        flux = PANEL_COUNT * solar_flux(L,B,S0,A0, 51, 180, solpos )
+        flux = PANEL_COUNT * solar_flux(L,B,S0,A0, theta, phi, solpos )
         joule = integrate.simps(flux, dx=60)
         result.append(joule)
     return result
+
+# Precompute solar positions
+def monthly_angles(longtitude, altitude, elevation, tz, year):
+    pdStartDates = pd.date_range(start='2024-01-01', end='2024-12-01', freq='MS')
+    pdEndDates = pdStartDates + pd.offsets.MonthEnd(1)
+    startDates = np.array([d.strftime('%Y-%m-%d') for d in pdStartDates])
+    endDates = np.array([d.strftime('%Y-%m-%d') for d in pdEndDates])
+    result = []
+    for i in range(12):
+        solpos = get_solar_position(startDates[i], endDates[i], longtitude, altitude, elevation, tz)
+        energy = np.zeros((91, 360))
+        for theta in range(91):
+            for phi in range(360):
+                flux = solar_flux(L, B, 1100, 0.5, PANEL_EFFICIENCY,  theta, phi, solpos)
+                energy[theta][phi] = integrate.simps(flux, dx=3600)
+        max_energy_index = np.unravel_index(np.argmax(energy), energy.shape)
+        result.append(max_energy_index)
+    return result
+
+# Datoer
+pdStartDates = pd.date_range(date(2024,1,1), date(2024,12,31), freq='MS')
+pdEndDates = pdStartDates + pd.offsets.MonthEnd(1)
+startDates = np.array([d.strftime('%Y-%m-%d') for d in pdStartDates])
+endDates = np.array([d.strftime('%Y-%m-%d') for d in pdEndDates])
