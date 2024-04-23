@@ -130,6 +130,9 @@ def solar_flux(Længde, bredde, S_0, A_0, theta_panel, phi_panel, start_dato, sl
     phi = np.deg2rad(np.array(solpos["azimuth"]))
  
     proj = solar_panel_projection_arrays(theta, phi, np.deg2rad(theta_panel), np.deg2rad(phi_panel))
+
+    valid_mask = (theta >= 0) & (theta <= np.pi / 2)
+    projection = np.where(valid_mask, projection, 0)
     
     flux = Længde * bredde * S_0 * A_0 * proj * PANEL_EFFICIENCY
     
