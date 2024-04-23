@@ -100,20 +100,13 @@ def solar_elevation_angle(theta):
     
 
 
-# solar panel elevation projection funktioner:
+# Projectionen af solens stråler på et panel
 def solar_panel_projection(theta_s, phi_s, theta_p, phi_p):
     proj = np.sin(theta_p) * np.sin(theta_s) * np.cos(phi_p - phi_s) + np.cos(theta_p) * np.cos(theta_s)
-    return max(proj,0)
+    return np.where(proj < 0, 0,proj)
 
-def solar_panel_projection_arrays(theta_s, phi_s, theta_p, phi_p):
-    if (len(theta_s) == len(phi_s)):
-        return np.array([solar_panel_projection(theta_s[i], phi_s[i], theta_p, phi_p) for i in range(len(theta_s))])
-    else: 
-        raise ValueError("Arrays do not have equal number of entries")
-
-def solar_flux(Længde, bredde, S_0, A_0, theta_panel, phi_panel, start_dato, slut_dato,latitude, longtitude, altitude, tz):
-    """Returns time,x,y,z as np arrays"""
-
+# Solens position
+def get_solar_position(start_dato, slut_dato,latitude, longtitude, altitude, tz):
     delta_tid = "H" #"Min"
     tidszone = "Europe/Copenhagen"
     
@@ -124,37 +117,23 @@ def solar_flux(Længde, bredde, S_0, A_0, theta_panel, phi_panel, start_dato, sl
     
     # Estimate Solar Position with the 'Location' object
     solpos = site.get_solarposition(times)
+    return solpos
 
+# Udregner fluxen ud fra solens position vinkel og meget mere:
+def solar_flux(Længde, bredde, S_0, A_0, theta_panel, phi_panel, solpos):
+    """Returns time,x,y,z as np arrays"""
     # Convert zenith and azimuth from degrees to radians
     theta = np.deg2rad(np.array(solpos["zenith"]))
     phi = np.deg2rad(np.array(solpos["azimuth"]))
  
-    proj = solar_panel_projection_arrays(theta, phi, np.deg2rad(theta_panel), np.deg2rad(phi_panel))
+    proj = solar_panel_projection(theta, phi, np.deg2rad(theta_panel), np.deg2rad(phi_panel))
 
     valid_mask = (theta >= 0) & (theta <= np.pi / 2)
-    proj = np.where(valid_mask, projection, 0)
+    proj = np.where(valid_mask, proj, 0)
     
     flux = Længde * bredde * S_0 * A_0 * proj * PANEL_EFFICIENCY
     
     return flux
-
-# Funktions kald eksempel.
-# flux = solar_flux(1, 1, 1100, 0.5, 0, 180, "2024-01-01", "2024-12-31", 55.7861, 12.5234, 10,  "Europe/Copenhagen")
-
-# Beregning af den totale energiproduktion for flux array. dx er tidintervallet i sekunder mellem hvert datapunkt for fluxen
-integral = integrate.simps(flux, dx = 3600)
-# Mangler solpanelets effektivitet i forhold til konvertering af solens stråler
-integral
-
-# Bestemmelse af vinklen hvori man producerer mest energi
-energy = []
-for i in range (91):
-    flux = solar_flux(1, 1, 1100, 0.5, i, 180, "2024-01-01", "2024-12-31", 55.7861, 12.5234, 10,  "Europe/Copenhagen")
-    energy.append(integrate.simps(flux, dx = 3600))
-# Plot vinkel i forhold til energi produceret 
-plt.plot(energy)
-# Find vinklen man produceret mest energi.
-energy.index(max(energy))
 
 # Giver en date range som array
 def daterange(start_date, end_date):
