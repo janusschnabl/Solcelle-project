@@ -13,9 +13,9 @@ PANEL_EFFICIENCY = 0.214
 A0 = 0.5
 S0 = 1100
 L = 2.384
-B = 1.303 
+B = 1.303
 PANEL_COUNT = 38
-LATTITUDE, LONGTITUDE, ALTITUDE = 55.7861, 12.5234, 10
+LATITUDE, LONGTITUDE, ALTITUDE = 55.7861, 12.5234, 10
 
 
 #funktionsværdier i `f` i intervallet $[Low, Up]$ og angiver de tilhørende `t`-værdier.
@@ -24,7 +24,7 @@ def interval(f, t, lower, upper):
         if f[i] > lower and f[i] < upper:
             print("Data(f): ", f[i], "Time(t): ", t[i])
     return None
-        
+
 
 # Fortegn skift
 def fortegnskift(f, t):
@@ -40,7 +40,7 @@ def fortegnskift(f, t):
 def max_sol(start_dato, slut_dato, latitude, longtitude, place):
     delta_tid = "H" #"M"
     tidszone = "Europe/Copenhagen"
-    
+
     site = Location(
         latitude, longtitude, "Europe/Copenhagen", 10, place
     )
@@ -49,10 +49,10 @@ def max_sol(start_dato, slut_dato, latitude, longtitude, place):
     times = pd.date_range(
         start_dato + " 00:00:00", slut_dato + " 23:59:00", inclusive="left", freq=delta_tid, tz=tidszone
     )
-    
+
     # Estimate Solar Position with the 'Location' object
     solpos = site.get_solarposition(times)
-    
+
     f = np.array(solpos.loc[start_dato].elevation)
 
     return f.max()
@@ -63,22 +63,22 @@ def solar_position_to_xyz(start_dato, latitude, longtitude, altitude, tz):
 
     delta_tid = "H" #"M"
     tidszone = "Europe/Copenhagen"
-    
+
     site = Location(latitude, longtitude, tz, altitude)
 
     # Definition of a time range of simulation
     times = pd.date_range (start_dato + " 00:00:00", start_dato + " 23:59:00", inclusive="left", freq=delta_tid, tz=tidszone)
-    
+
     # Estimate Solar Position with the 'Location' object
     solpos = site.get_solarposition(times)
-    
+
     # Get the Earth-Sun distance and convert to meters
     r = np.array(nrel_earthsun_distance(times) * 149597870700)  # 1 AU in meters
-    
+
     # Convert zenith and azimuth from degrees to radians
     theta = np.deg2rad(np.array(solpos.loc[start_dato].zenith))
     phi = np.deg2rad(np.array(solpos.loc[start_dato].azimuth))
-    
+
     # Calculate Cartesian coordinates
     x = r * np.sin(theta) * np.cos(phi)
     y = r * np.sin(theta) * np.sin(phi)
@@ -92,14 +92,14 @@ def solar_position_to_spherical(x, y, z):
     r = np.sqrt(x**2 + y**2 + z**2)
     theta = np.arccos(z / r)
     phi = np.arctan2(y, x)
-    
+
     return r, theta, phi
 
 
 # Theta til alfa koordinater
 def solar_elevation_angle(theta):
     return np.pi/2 - theta
-    
+
 
 
 # Projectionen af solens stråler på et panel
@@ -108,15 +108,15 @@ def solar_panel_projection(theta_s, phi_s, theta_p, phi_p):
     return np.where(proj < 0, 0,proj)
 
 # Solens position
-def get_solar_position(start_dato, slut_dato,latitude, longtitude, altitude, tz, dt = "H"):
+def get_solar_position(start_dato, slut_dato,latitude, longtitude, altitude, tz, dt="H"):
     """dt = 'H' or 'Min'"""
     tidszone = "Europe/Copenhagen"
-    
+
     site = Location(latitude, longtitude, tz, altitude)
 
     # Definition of a time range of simulation
     times = pd.date_range (start_dato + " 00:00:00", slut_dato + " 23:59:00", inclusive="left", freq=dt, tz=tidszone)
-    
+
     # Estimate Solar Position with the 'Location' object
     solpos = site.get_solarposition(times)
     return solpos
@@ -131,9 +131,9 @@ def solar_flux(Længde, bredde, S_0, A_0, theta_panel, phi_panel, solpos):
 
     valid_mask = (theta >= 0) & (theta <= np.pi / 2)
     proj = np.where(valid_mask, proj, 0)
-    
+
     flux = Længde * bredde * S_0 * A_0 * proj * PANEL_EFFICIENCY
-    
+
     return flux
 
 # Giver en date range
@@ -141,10 +141,10 @@ def daterange(start_date, end_date):
     for n in range(int((end_date - start_date).days)):
         yield start_date + timedelta(n)
 
-# Udregner 
+# Udregner
 def get_daily_energy(start_date, end_date, lat, lon, alt):
     result = []
-    for single_date in daterange(start_date, end_date): 
+    for single_date in daterange(start_date, end_date):
         date_string = single_date.strftime("%Y-%m-%d")
         solpos = get_solar_position(date_string, date_string, lat, lon, alt, "Europe/Copenhagen", dt = "Min")
         flux = PANEL_COUNT * solar_flux(L,B,S0,A0, 51, 180, solpos )
