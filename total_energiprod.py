@@ -9,6 +9,7 @@ def get_daily_prices():
     prices = pd.read_json("Elspotprices.json")
     prices = prices[prices.PriceArea == "DK2"]
     prices["HourDK"] = pd.to_datetime(prices["HourDK"])
+    prices["SpotPriceDKK"] = np.where(prices["SpotPriceDKK"] >= 0, prices["SpotPriceDKK"], 0)
     prices["HourUTC"] = pd.to_datetime(prices["HourUTC"])
     monthly_prices = []
     for i in range(1,13):
@@ -50,4 +51,4 @@ for i in range(12):
     energy_optimized += get_daily_energy(pdStartDates[i], pdEndDates[i], 55.781, 12.5234, 10, thetas[i], phis[i])
 
 plt.plot(energy_optimized)
-print(energy_optimized)
+#print(energy_optimized)

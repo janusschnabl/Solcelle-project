@@ -158,6 +158,8 @@ def get_monthly_prices():
     prices = prices[prices.PriceArea == "DK2"]
     prices["HourDK"] = pd.to_datetime(prices["HourDK"])
     prices["HourUTC"] = pd.to_datetime(prices["HourUTC"])
+    prices["SpotPriceDKK"] = np.where(prices["SpotPriceDKK"] >= 0, prices["SpotPriceDKK"], 0)
+
     monthly_prices = []
     for i in range(1,13):
         month = prices[prices["HourDK"].dt.month == i]
