@@ -41,16 +41,12 @@ def max_sol(start_dato, slut_dato, latitude, longtitude, place):
     delta_tid = "H" #"M"
     tidszone = "Europe/Copenhagen"
 
-    site = Location(
-        latitude, longtitude, "Europe/Copenhagen", 10, place
-    )
+    site = Location(latitude, longtitude, "Europe/Copenhagen", 10, place)
 
-    # Definition of a time range of simulation
-    times = pd.date_range(
-        start_dato + " 00:00:00", slut_dato + " 23:59:00", inclusive="left", freq=delta_tid, tz=tidszone
-    )
+    # Tidsinterval
+    times = pd.date_range(start_dato + " 00:00:00", slut_dato + " 23:59:00", inclusive="left", freq=delta_tid, tz=tidszone)
 
-    # Estimate Solar Position with the 'Location' object
+    # solpos estimat
     solpos = site.get_solarposition(times)
 
     f = np.array(solpos.loc[start_dato].elevation)
@@ -65,21 +61,17 @@ def solar_position_to_xyz(start_dato, latitude, longtitude, altitude, tz):
     tidszone = "Europe/Copenhagen"
 
     site = Location(latitude, longtitude, tz, altitude)
-
-    # Definition of a time range of simulation
     times = pd.date_range (start_dato + " 00:00:00", start_dato + " 23:59:00", inclusive="left", freq=delta_tid, tz=tidszone)
-
-    # Estimate Solar Position with the 'Location' object
     solpos = site.get_solarposition(times)
 
-    # Get the Earth-Sun distance and convert to meters
+    # AU radius
     r = np.array(nrel_earthsun_distance(times) * 149597870700)  # 1 AU in meters
 
-    # Convert zenith and azimuth from degrees to radians
+    # zenith azimuth deg to rad
     theta = np.deg2rad(np.array(solpos.loc[start_dato].zenith))
     phi = np.deg2rad(np.array(solpos.loc[start_dato].azimuth))
 
-    # Calculate Cartesian coordinates
+    # koordinater
     x = r * np.sin(theta) * np.cos(phi)
     y = r * np.sin(theta) * np.sin(phi)
     z = r * np.cos(theta)
